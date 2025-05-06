@@ -298,8 +298,8 @@ local function LuaEncode(inputTable, options)
                 return PositiveInf
             elseif value == -1/0 then
                 return NegativeInf
-			elseif value ~= value then
-				return "0/0"
+	    elseif value ~= value then
+		return "0/0"
             end
 
             -- Return fixed-formatted precision num
