@@ -1,16 +1,16 @@
 <!-- Links -->
-[latest-release]: https://github.com/regginator/LuaEncode/releases/latest
-[license]: https://github.com/regginator/LuaEncode/blob/master/LICENSE.txt
-[commits]: https://github.com/regginator/LuaEncode/commits
-[wally]: https://wally.run/package/regginator/luaencode
+[latest-release]: https://github.com/chadhyatt/LuaEncode/releases/latest
+[license]: https://github.com/chadhyatt/LuaEncode/blob/master/LICENSE.txt
+[commits]: https://github.com/chadhyatt/LuaEncode/commits
+[wally]: https://wally.run/package/chadhyatt/luaencode
 
 [roblox-marketplace]: https://create.roblox.com/marketplace/asset/12791121865/LuaEncode
 
 <!-- Badges -->
-[badges/latest-release]: https://img.shields.io/github/v/release/regginator/LuaEncode?label=Latest%20Release
-[badges/last-modified]: https://img.shields.io/github/last-commit/regginator/LuaEncode?label=Last%20Modifed
-[badges/license]: https://img.shields.io/github/license/regginator/LuaEncode?label=License
-[badges/wally]: https://img.shields.io/badge/wally.run-regginator%2Fluaencode-%23ad4646?style=flat"
+[badges/latest-release]: https://img.shields.io/github/v/release/chadhyatt/LuaEncode?label=Latest%20Release
+[badges/last-modified]: https://img.shields.io/github/last-commit/chadhyatt/LuaEncode?label=Last%20Modifed
+[badges/license]: https://img.shields.io/github/license/chadhyatt/LuaEncode?label=License
+[badges/wally]: https://img.shields.io/badge/wally.run-chadhyatt%2Fluaencode-%23ad4646?style=flat"
 
 <!-- Social icons -->
 [social/roblox-marketplace]: gh-assets/roblox-marketplace-icon.svg
@@ -21,7 +21,7 @@ Fast Table Serialization Library for Pure Luau/Lua 5.1+
 
 [![Latest Release][badges/latest-release]][latest-release] [![Last Modified][badges/last-modified]][commits] [![License][badges/license]][license] [![Wally][badges/wally]][wally]
 
-[![Roblox Marketplace][social/roblox-marketplace]][roblox-marketplace] 
+[![Roblox Marketplace][social/roblox-marketplace]][roblox-marketplace]
 
 ___
 
@@ -47,7 +47,7 @@ ___
     If you're using [Rojo](https://rojo.space) and [Wally](https://wally.run/), you can import the package in your `wally.toml`:
 
     ```toml
-    LuaEncode = "regginator/luaencode@1.4.3"
+    LuaEncode = "chadhyatt/luaencode@1.4.3"
     ```
 
 * ### Roblox Marketplace
@@ -185,7 +185,7 @@ See file: [LICENSE](LICENSE)
 ```txt
 MIT License
 
-Copyright (c) 2022-2024 Reggie <reggie@latte.to>
+Copyright (c) 2022-2025 Chad Hyatt <chad@hyatt.page>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal

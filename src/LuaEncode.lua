@@ -1,12 +1,12 @@
 -- LuaEncode - Fast Table Serialization Library for Pure Luau/Lua 5.1+
--- Copyright (c) 2022-2024 reggie@latte.to | MIT License
--- https://github.com/regginator/LuaEncode
+-- MIT License | Copyright (c) 2022-2025 Chad Hyatt <chad@hyatt.page>
+-- https://github.com/chadhyatt/LuaEncode
 
 --!optimize 2
 --!native
 
 local table, string, next, pcall, game, workspace, tostring, tonumber, getmetatable =
-      table, string, next, pcall, game, workspace, tostring, tonumber, getmetatable
+    table, string, next, pcall, game, workspace, tostring, tonumber, getmetatable
 
 local string_format = string.format
 local string_char = string.char
@@ -49,7 +49,7 @@ local KeyIndexTypes = LookupTable({
 -- Simple function for directly checking the type on values, with their input, variable name,
 -- and desired type name(s) to check
 local function CheckType(inputData, dataName, ...)
-    local ValidTypes = {...}
+    local ValidTypes = { ... }
     local ValidTypesLookup = LookupTable(ValidTypes)
     local InputType = Type(inputData)
 
@@ -67,7 +67,8 @@ end
 
 -- This re-serializes a string back into Lua, for the interpreter AND humans to read. This fixes
 -- `string_format("%q")` only outputting in system encoding, instead of explicit Lua byte escapes
-local SerializeString do
+local SerializeString
+do
     -- These are control characters to be encoded in a certain way in Lua rather than just a byte escape
     local SpecialCharacters = {
         ["\""] = "\\\"",
@@ -110,7 +111,8 @@ local function CommentBlock(inputString)
     return "--[" .. Padding .. "[" .. inputString .. "]" .. Padding .. "]"
 end
 
-local EvaluateInstancePath do
+local EvaluateInstancePath
+do
     local function IsService(object)
         -- Logically, if an object is actually under a service, that service *has* to already exist, as we've
         -- presumably evaluated to said path
@@ -216,11 +218,12 @@ local function LuaEncode(inputTable, options)
     CheckType(options.FunctionsReturnRaw, "options.FunctionsReturnRaw", "boolean", "nil")
     CheckType(options.UseInstancePaths, "options.UseInstancePaths", "boolean", "nil")
     CheckType(options.SerializeMathHuge, "options.SerializeMathHuge", "boolean", "nil")
-    
+
     CheckType(options._StackLevel, "options._StackLevel", "number", "nil")
     CheckType(options._VisitedTables, "options._VisitedTables", "table", "nil")
 
-    local Prettify = (options.Prettify == nil and options.PrettyPrinting == nil and false) or (options.Prettify ~= nil and options.Prettify) or (options.PrettyPrinting and options.PrettyPrinting)
+    local Prettify = (options.Prettify == nil and options.PrettyPrinting == nil and false) or
+        (options.Prettify ~= nil and options.Prettify) or (options.PrettyPrinting and options.PrettyPrinting)
     local IndentCount = options.IndentCount or (Prettify and 4) or 0
     local InsertCycles = (options.InsertCycles == nil and false) or options.InsertCycles
     local OutputWarnings = (options.OutputWarnings == nil and true) or options.OutputWarnings
@@ -254,7 +257,8 @@ local function LuaEncode(inputTable, options)
     local KeyNumIndex = 1
 
     -- Cases for encoding values, then end setup. Functions are all expected to return a (EncodedKey: string, EncloseInBrackets: boolean)
-    local TypeCases = {} do
+    local TypeCases = {}
+    do
         -- Basic func for getting the direct value of an encoded type without weird table.pack()[1] syntax
         local function TypeCase(typeName, value)
             -- Each of these funcs return a tuple, so it'd be annoying to do case-by-case
@@ -266,8 +270,8 @@ local function LuaEncode(inputTable, options)
         local function Args(...)
             local EncodedValues = {}
 
-            for _, Arg in next, {...} do
-                EncodedValues[#EncodedValues+1] = TypeCase(
+            for _, Arg in next, { ... } do
+                EncodedValues[#EncodedValues + 1] = TypeCase(
                     Type(Arg),
                     Arg
                 )
@@ -279,7 +283,7 @@ local function LuaEncode(inputTable, options)
         -- For certain Roblox data types, we use a custom serialization method for filling out params etc
         local function Params(newData, params)
             return "(function(v, p) for pn, pv in next, p do v[pn] = pv end return v end)(" ..
-                table_concat({newData, TypeCase("table", params)}, ValueSeperator) ..
+                table_concat({ newData, TypeCase("table", params) }, ValueSeperator) ..
                 ")"
         end
 
@@ -294,9 +298,9 @@ local function LuaEncode(inputTable, options)
 
             -- Lua's internal `tostring` handling will denote positive/negativie-infinite number TValues as "inf", which
             -- makes certain numbers not encode properly. We also just want to make the output precise
-            if value == 1/0 then
+            if value == 1 / 0 then
                 return PositiveInf
-            elseif value == -1/0 then
+            elseif value == -1 / 0 then
                 return NegativeInf
             end
 
@@ -321,7 +325,8 @@ local function LuaEncode(inputTable, options)
                 return "{--[[LuaEncode: Duplicate reference]]}"
             end
 
-            local NewOptions = setmetatable({}, {__index = options}) do
+            local NewOptions = setmetatable({}, { __index = options })
+            do
                 NewOptions.Prettify = (isKey and false) or Prettify
                 NewOptions.IndentCount = (isKey and ((not Prettify and IndentCount) or 1)) or IndentCount
                 NewOptions._StackLevel = (isKey and 1) or StackLevel + 1
@@ -349,7 +354,8 @@ local function LuaEncode(inputTable, options)
 
             return string_format(
                 "function()%sreturn end",
-                (OutputWarnings and " --[[LuaEncode: `options.FunctionsReturnRaw` false; can't serialize functions]] ") or ""
+                (OutputWarnings and " --[[LuaEncode: `options.FunctionsReturnRaw` false; can't serialize functions]] ") or
+                ""
             )
         end
 
@@ -365,7 +371,7 @@ local function LuaEncode(inputTable, options)
 
             for EnumValue, IsEnabled in next, EnumValues do
                 if IsEnabled then
-                    EncodedArgs[#EncodedArgs+1] = EnumValue
+                    EncodedArgs[#EncodedArgs + 1] = EnumValue
                 end
             end
 
@@ -389,10 +395,10 @@ local function LuaEncode(inputTable, options)
                 SearchKeyword = value.SearchKeyword,
                 MinPrice = value.MinPrice,
                 MaxPrice = value.MaxPrice,
-                SortType = value.SortType, -- EnumItem
+                SortType = value.SortType,             -- EnumItem
                 CategoryFilter = value.CategoryFilter, -- EnumItem
-                BundleTypes = value.BundleTypes, -- table
-                AssetTypes = value.AssetTypes -- table
+                BundleTypes = value.BundleTypes,       -- table
+                AssetTypes = value.AssetTypes          -- table
             })
         end
 
@@ -423,17 +429,17 @@ local function LuaEncode(inputTable, options)
 
             return "DockWidgetPluginGuiInfo.new(" ..
                 Args(
-                    -- InitialDockState (Enum.InitialDockState)
-                    Enum.InitialDockState[string_match(ValueString, "InitialDockState:(%w+)")], -- Enum.InitialDockState.Right
+                -- InitialDockState (Enum.InitialDockState)
+                    Enum.InitialDockState[string_match(ValueString, "InitialDockState:(%w+)")],    -- Enum.InitialDockState.Right
                     -- InitialEnabled and InitialEnabledShouldOverrideRestore (boolean as number; `0` or `1`)
-                    string_match(ValueString, "InitialEnabled:(%w+)") == "1", -- false
+                    string_match(ValueString, "InitialEnabled:(%w+)") == "1",                      -- false
                     string_match(ValueString, "InitialEnabledShouldOverrideRestore:(%w+)") == "1", -- false
                     -- FloatingXSize/FloatingYSize (numbers)
-                    tonumber(string_match(ValueString, "FloatingXSize:(%w+)")), -- 0
-                    tonumber(string_match(ValueString, "FloatingYSize:(%w+)")), -- 0
+                    tonumber(string_match(ValueString, "FloatingXSize:(%w+)")),                    -- 0
+                    tonumber(string_match(ValueString, "FloatingYSize:(%w+)")),                    -- 0
                     -- MinWidth/MinHeight (numbers)
-                    tonumber(string_match(ValueString, "MinWidth:(%w+)")), -- 0
-                    tonumber(string_match(ValueString, "MinHeight:(%w+)")) -- 0
+                    tonumber(string_match(ValueString, "MinWidth:(%w+)")),                         -- 0
+                    tonumber(string_match(ValueString, "MinHeight:(%w+)"))                         -- 0
                 ) ..
                 ")"
         end
@@ -466,7 +472,7 @@ local function LuaEncode(inputTable, options)
 
             for EnumValue, IsEnabled in next, EnumValues do
                 if IsEnabled then
-                    EncodedArgs[#EncodedArgs+1] = EnumValue
+                    EncodedArgs[#EncodedArgs + 1] = EnumValue
                 end
             end
 
@@ -566,7 +572,7 @@ local function LuaEncode(inputTable, options)
             return "Region3.new(" ..
                 Args(
                     ValueCFrame * CFrame.new(-ValueSize / 2), -- Minimum
-                    ValueCFrame * CFrame.new(ValueSize / 2) -- Maximum
+                    ValueCFrame * CFrame.new(ValueSize / 2)   -- Maximum
                 ) ..
                 ")"
         end
@@ -600,8 +606,8 @@ local function LuaEncode(inputTable, options)
         TypeCases["UDim2"] = function(value)
             return "UDim2.new(" ..
                 Args(
-                    -- Not directly using X and Y UDims for better output (i.e. would be
-                    -- UDim2.new(UDim.new(1, 0), UDim.new(1, 0)) if I did)
+                -- Not directly using X and Y UDims for better output (i.e. would be
+                -- UDim2.new(UDim.new(1, 0), UDim.new(1, 0)) if I did)
                     value.X.Scale,
                     value.X.Offset,
                     value.Y.Scale,
@@ -629,7 +635,7 @@ local function LuaEncode(inputTable, options)
         TypeCases["buffer"] = function(value)
             return "buffer.fromstring(" .. SerializeString(buffer.tostring(value)) .. ")"
         end
-		
+
         -- With userdata, just encode directly
         TypeCases["userdata"] = function(value)
             if getmetatable(value) ~= nil then -- Has mt
@@ -644,13 +650,13 @@ local function LuaEncode(inputTable, options)
     local Output = {}
 
     local TablePointer = inputTable
-    local NextKey = nil -- Used with TableStack so the TablePointer loop knows where to continue from upon stack pop
+    local NextKey = nil     -- Used with TableStack so the TablePointer loop knows where to continue from upon stack pop
     local IsNewTable = true -- Used with table stack push/pop to identify when an opening curly brace should be added
 
     -- Stack array for table depth
-    local TableStack = {} -- [Depth: number] = {TablePointer: table, NextKey: any, KeyNumIndex: number}
-    local RefMaps = {[TablePointer] = ""} -- [Ref: table] = ".example["ref path"]'
-    local CycleMaps = {} -- ['.example["ref path"]'] = '.another["ref path"]'
+    local TableStack = {}                   -- [Depth: number] = {TablePointer: table, NextKey: any, KeyNumIndex: number}
+    local RefMaps = { [TablePointer] = "" } -- [Ref: table] = ".example["ref path"]'
+    local CycleMaps = {}                    -- ['.example["ref path"]'] = '.another["ref path"]'
 
     while TablePointer do
         -- Update StackLevel for formatting
@@ -660,63 +666,64 @@ local function LuaEncode(inputTable, options)
 
         -- Only append an opening brace to the table if this isn't just a continution up the stack
         if IsNewTable then
-            Output[#Output+1] = "{"
+            Output[#Output + 1] = "{"
         elseif next(TablePointer, NextKey) == nil then -- Formatting for the next entry still needs to be added like any other value
-            Output[#Output+1] = NewEntryString .. EndingIndentString
+            Output[#Output + 1] = NewEntryString .. EndingIndentString
         else
-            Output[#Output+1] = ","
+            Output[#Output + 1] = ","
         end
 
         VisitedTables[TablePointer] = true
 
         -- Just because of control flow restrictions with Lua compatibility
-        local SkipStackPop = false 
+        local SkipStackPop = false
 
         for Key, Value in next, TablePointer, NextKey do
             local KeyType = Type(Key)
             local ValueType = Type(Value)
 
             local ValueIsTable = ValueType == "table"
-    
+
             if TypeCases[KeyType] and TypeCases[ValueType] then
                 if Prettify then
-                    Output[#Output+1] = NewEntryString .. IndentString
+                    Output[#Output + 1] = NewEntryString .. IndentString
                 end
-    
+
                 local ValueWasEncoded = false -- Keeping track of this for adding a "," to the output if needed
-    
+
                 -- Evaluate output for key
-                local KeyEncodedSuccess, EncodedKeyOrError, DontEncloseKeyInBrackets = pcall(TypeCases[KeyType], Key, true) -- The `true` represents if it's a key or not, here it is
-    
+                local KeyEncodedSuccess, EncodedKeyOrError, DontEncloseKeyInBrackets = pcall(TypeCases[KeyType], Key,
+                    true) -- The `true` represents if it's a key or not, here it is
+
                 -- Evaluate output for value, ignoring 2nd arg (`DontEncloseInBrackets`) because this isn't the key
-                local ValueEncodedSuccess, EncodedValueOrError 
+                local ValueEncodedSuccess, EncodedValueOrError
                 if not ValueIsTable then
                     ValueEncodedSuccess, EncodedValueOrError = pcall(TypeCases[ValueType], Value, false)
                 end
-    
+
                 -- Ignoring `if EncodedKeyOrError` because the key doesn't actually need to ALWAYS
                 -- be explicitly encoded, like if it's a number of the current key index!
                 if KeyEncodedSuccess and (ValueIsTable or (ValueEncodedSuccess and EncodedValueOrError)) then
                     -- Append explicit key if necessary
-                    if EncodedKeyOrError then 
+                    if EncodedKeyOrError then
                         if DontEncloseKeyInBrackets then
-                            Output[#Output+1] = EncodedKeyOrError
+                            Output[#Output + 1] = EncodedKeyOrError
                         else
-                            Output[#Output+1] = table_concat({"[", EncodedKeyOrError, "]"})
+                            Output[#Output + 1] = table_concat({ "[", EncodedKeyOrError, "]" })
                         end
-    
-                        Output[#Output+1] = EqualsSeperator
+
+                        Output[#Output + 1] = EqualsSeperator
                     end
-    
+
                     -- Of course, recursive tables are handled differently and use the stack system
                     if ValueIsTable then
                         local IndexPath
-                        if InsertCycles and KeyIndexTypes[KeyType] and RefMaps[TablePointer]  then
+                        if InsertCycles and KeyIndexTypes[KeyType] and RefMaps[TablePointer] then
                             if KeyType == "string" and not LuaKeywords[Key] and string_match(Key, "^[A-Za-z_][A-Za-z0-9_]*$") then
                                 IndexPath = "." .. Key
                             else
                                 local EncodedKeyAsValue = TypeCases[KeyType](Key)
-                                IndexPath = table_concat({"[", EncodedKeyAsValue, "]"})
+                                IndexPath = table_concat({ "[", EncodedKeyAsValue, "]" })
                             end
                         end
 
@@ -725,12 +732,12 @@ local function LuaEncode(inputTable, options)
                                 RefMaps[Value] = RefMaps[TablePointer] .. IndexPath
                             end
 
-                            TableStack[#TableStack+1] = {TablePointer, Key, KeyNumIndex}
+                            TableStack[#TableStack + 1] = { TablePointer, Key, KeyNumIndex }
 
                             TablePointer = Value
                             NextKey = nil
                             KeyNumIndex = 1
-    
+
                             IsNewTable = true
                             SkipStackPop = true
                             break
@@ -747,8 +754,8 @@ local function LuaEncode(inputTable, options)
                     end
 
                     -- Append value like normal
-                    Output[#Output+1] = EncodedValueOrError
-    
+                    Output[#Output + 1] = EncodedValueOrError
+
                     ValueWasEncoded = true
                 elseif OutputWarnings then -- Then `Encoded(Key/Value)OrError` is the error msg
                     -- ^^ Then either the key or value wasn't properly checked or encoded, and there
@@ -757,29 +764,31 @@ local function LuaEncode(inputTable, options)
                         "LuaEncode: Failed to encode %s of data type %s: %s",
                         (not KeyEncodedSuccess and "key") or (not ValueEncodedSuccess and "value") or "key/value",
                         ValueType,
-                        (not KeyEncodedSuccess and SerializeString(EncodedKeyOrError)) or (not ValueEncodedSuccess and SerializeString(EncodedValueOrError)) or "(Failed to get error message)"
+                        (not KeyEncodedSuccess and SerializeString(EncodedKeyOrError)) or
+                        (not ValueEncodedSuccess and SerializeString(EncodedValueOrError)) or
+                        "(Failed to get error message)"
                     )
-    
-                    Output[#Output+1] = CommentBlock(ErrorMessage)
+
+                    Output[#Output + 1] = CommentBlock(ErrorMessage)
                 end
-    
+
                 if next(TablePointer, Key) == nil then
                     -- If there isn't another value after the current index, add ending formatting
-                    Output[#Output+1] = NewEntryString .. EndingIndentString
+                    Output[#Output + 1] = NewEntryString .. EndingIndentString
                 elseif ValueWasEncoded then
-                    Output[#Output+1] = ","
+                    Output[#Output + 1] = ","
                 end
             end
         end
 
         -- Vanilla Lua control flow is fun
         if not SkipStackPop then
-            Output[#Output+1] = "}"
+            Output[#Output + 1] = "}"
 
             if #TableStack > 0 then
                 local TableUp = TableStack[#TableStack]
                 TableStack[#TableStack] = nil -- Pop off the table stack
-    
+
                 TablePointer, NextKey, KeyNumIndex = TableUp[1], TableUp[2], TableUp[3]
                 IsNewTable = false
             else
@@ -791,11 +800,13 @@ local function LuaEncode(inputTable, options)
     if InsertCycles then
         local CycleMapsOut = {}
         for CycleIndex, CycleMap in next, CycleMaps do
-            CycleMapsOut[#CycleMapsOut+1] = IndentString .. "t" .. CycleIndex .. EqualsSeperator .. "t" .. CycleMap .. CodegenNewline
+            CycleMapsOut[#CycleMapsOut + 1] = IndentString ..
+                "t" .. CycleIndex .. EqualsSeperator .. "t" .. CycleMap .. CodegenNewline
         end
 
         if #CycleMapsOut > 0 then
-            return table_concat({"(function(t)", NewEntryString, table_concat(CycleMapsOut), NewEntryString, IndentString, "return t", CodegenNewline, "end)(", table_concat(Output), ")"})
+            return table_concat({ "(function(t)", NewEntryString, table_concat(CycleMapsOut), NewEntryString,
+                IndentString, "return t", CodegenNewline, "end)(", table_concat(Output), ")" })
         end
     end
 

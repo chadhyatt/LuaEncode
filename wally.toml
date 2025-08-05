@@ -1,9 +1,9 @@
 [package]
-name = "regginator/luaencode"
-description = "Fast Table Serialization Library for Pure Luau/Lua 5.1+"
+name = "chadhyatt/luaencode"
+description = "Fast table serialization library for pure Luau/Lua 5.1+"
 version = "1.4.3"
 license = "MIT"
-authors = ["reggie <reggie@latte.to>"]
+authors = ["Chad Hyatt <chad@hyatt.page>"]
 realm = "shared"
 registry = "https://github.com/UpliftGames/wally-index"
 
