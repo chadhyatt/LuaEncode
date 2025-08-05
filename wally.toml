@@ -1,7 +1,7 @@
 [package]
 name = "chadhyatt/luaencode"
 description = "Fast table serialization library for pure Luau/Lua 5.1+"
-version = "1.4.3"
+version = "1.4.4"
 license = "MIT"
 authors = ["Chad Hyatt <chad@hyatt.page>"]
 realm = "shared"
