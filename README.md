@@ -17,7 +17,7 @@
 
 # LuaEncode
 
-Fast Table Serialization Library for Pure Luau/Lua 5.1+
+Fast table serialization library for pure Luau/Lua 5.1+
 
 [![Latest Release][badges/latest-release]][latest-release] [![Last Modified][badges/last-modified]][commits] [![License][badges/license]][license] [![Wally][badges/wally]][wally]
 
@@ -27,16 +27,16 @@ ___
 
 ## 🎉 About
 
-LuaEncode is a simple library for serialization of Lua tables and data structures, with support for Roblox's engine data types. LuaEncode natively supports both Luau and Lua 5.1+
+LuaEncode is a simple library for serialization of Lua tables and basic data types, along with support for all of Roblox's engine data types. LuaEncode supports both Luau and Lua 5.1+
 
 ### 🌟 Features
 
 * Serialization and output of basic types `number`, `string`, `table`, `boolean`, and `nil` for key/values
 * Pretty-printing and custom indentation configuration
-* Compatible with custom Roblox data types (e.g. `Instance`, `UDim2`, `Vector3`, `DateTime`, etc..) - See **[Roblox Engine Data Type Coverage](#roblox-engine-data-type-coverage)** for more info
-* Securely iterates and reads values, with potentially untrusted inputs in-mind
+* Compatible with Roblox's engine data types (`Instance`, `UDim2`, `Vector3`, `DateTime`, etc..) - See **[Roblox Engine Data Type Coverage](#roblox-engine-data-type-coverage)** for more info
+* Secure table iteration and value reading, with potentially untrusted inputs in-mind
 * Manual cycle inserts in serialized codegen with [`InsertCycles`](#api)
-* Raw key/value input with [`FunctionsReturnRaw`](#api)
+* Extended raw key/value inserts with [`FunctionsReturnRaw`](#api)
 
 ___
 
@@ -52,7 +52,7 @@ ___
 
 * ### Roblox Marketplace
 
-    You can also grab the LuaEncode module from the Roblox Marketplace directly: <https://roblox.com/library/12791121865>
+    You can also grab the LuaEncode module from the Roblox Marketplace: <https://roblox.com/library/12791121865>
 
 ___
 
@@ -75,8 +75,8 @@ local Table = {
 }
 
 local Encoded = LuaEncode(Table, {
-    Prettify = true, -- false by default (when this is true, IndentCount is also 4!)
-    FunctionsReturnRaw = true, -- false by default
+    Prettify = true,
+    FunctionsReturnRaw = true,
 })
 
 print(Encoded)
@@ -115,25 +115,25 @@ LuaEncode(inputTable: {[any]: any}, options: {[string]: any}): string
 
 | Argument           | Type                | Description                         |
 |:-------------------|:--------------------|:------------------------------------|
-| Prettify           | `<boolean:false>`  | Whether or not the output should use [pretty printing](https://en.wikipedia.org/wiki/Prettyprint#Programming_code_formatting) |
-| IndentCount        | `<number:0>`       | The amount of "spaces" that should be indented per entry (*Note: If `Prettify` is set to true and this is unspecified, it'll be set to `4` automatically*) |
-| InsertCycles       | `<boolean:false>`  | If there are cyclic references in your table, the output will be wrapped in an anonymous function that manually sets paths to those references. **NOTE: If a key in the index path to the cycle is a reference type (e.g. `table`, `function`), the codegen can't externally set that path, and will be ignored.** |
-| OutputWarnings     | `<boolean:true>`   | If "warnings" should be placed to the output (as comments); it's recommended to keep this enabled, however it can be disabled at ease |
-| FunctionsReturnRaw | `<boolean:false>`  | If functions in said table return back a "raw" value to place in the output as the key/value |
-| UseInstancePaths   | `<boolean:true>`  | If `Instance` reference objects should return their Lua-accessable path for encoding. If the instance is parented under `nil` or isn't under `game`/`workspace`, it'll always fall back to `Instance.new(ClassName)` as before |
-| SerializeMathHuge  | `<boolean:true> ` | If numbers calculated as "infinite" (or negative-inf) numbers should be serialized with "math.huge". (uses the `math` import, as opposed to just a direct data type) If false, "`1/0`" or "`-1/0`" will be serialized, which is supported on all target versions |
+| Prettify           | `<boolean:false>`  | Whether or not the output should be [pretty printed](https://en.wikipedia.org/wiki/Prettyprint#Programming_code_formatting) |
+| IndentCount        | `<number:0>`       | The amount of characters that should be used for indents (**Note**: If `Prettify` is set to true and this is unspecified, it will default to `4`) |
+| InsertCycles       | `<boolean:false>`  | If there are cyclic references in your table, the output will be wrapped in an anonymous function that manually sets paths to those references. (**NOTE:** If a key in the index path to the cycle is a reference type (e.g. `table`, `function`), the codegen can't externally set that path, and the value will have to be ignored) |
+| OutputWarnings     | `<boolean:true>`   | If "warnings" should be placed into the output as comment blocks |
+| FunctionsReturnRaw | `<boolean:false>`  | If `function` values should be treated as callbacks that return a string to be inserted directly into the serialized output as the key/value |
+| UseInstancePaths   | `<boolean:true>`  | If Roblox `Instance` values should return their Lua-accessable path for serialization. If the instance is parented under `nil` or isn't under `game`/`workspace`, it'll always fall back to `Instance.new(ClassName)` |
+| SerializeMathHuge  | `<boolean:true> ` | If "infinite" (or negative-infinite) numbers should be serialized as `math.huge`. (uses the `math` global, as opposed to just a direct data type) If false, "`1/0`" or "`-1/0`" will be serialized, which is supported on all target Lua environments |
 
 ___
 
 ## Roblox Engine Data Type Coverage
 
-*(See [AllRobloxTypes.server.lua](tests/RobloxTests/AllRobloxTypes.server.lua) for example input and (the current expected) output of ALL Roblox DataTypes.)*
+*(See [AllRobloxTypes.server.lua](tests/RobloxTests/AllRobloxTypes.server.lua) for example input and output of supported Roblox data types.)*
 
 ✔ Implemented | ➖ Partially Implemented | ❌ Unimplemented | ⛔ Never
 
 | DataType                                                                                                      | Serialized As                                     | Implemented |
 |:--------------------------------------------------------------------------------------------------------------|:--------------------------------------------------|:-----------:|
-| [buffer](https://create.roblox.com/docs/reference/engine/libraries/buffer)                                    | `buffer.create()`                                 | ✔ |
+| [buffer](https://create.roblox.com/docs/reference/engine/libraries/buffer)                                    | `buffer.fromString()`                             | ✔ |
 | [Axes](https://create.roblox.com/docs/reference/engine/datatypes/Axes)                                        | `Axes.new()`                                      | ✔ |
 | [BrickColor](https://create.roblox.com/docs/reference/engine/datatypes/BrickColor)                            | `BrickColor.new()`                                | ✔ |
 | [CFrame](https://create.roblox.com/docs/reference/engine/datatypes/CFrame)                                    | `CFrame.new()`                                    | ✔ |
@@ -174,15 +174,13 @@ ___
 | [Vector3](https://create.roblox.com/docs/reference/engine/datatypes/Vector3)                                  | `Vector3.new()`                                   | ✔ |
 | [Vector3int16](https://create.roblox.com/docs/reference/engine/datatypes/Vector3int16)                        | `Vector3int16.new()`                              | ✔ |
 
-*(Official Roblox DataType documentation [here](https://create.roblox.com/docs/reference/engine/datatypes))*
+*(See official Roblox data type documentation [here](https://create.roblox.com/docs/reference/engine/datatypes))*
 
 ___
 
 ## 🏛️ License
 
-See file: [LICENSE](LICENSE)
-
-```txt
+```
 MIT License
 
 Copyright (c) 2022-2025 Chad Hyatt <chad@hyatt.page>

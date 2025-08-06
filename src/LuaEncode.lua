@@ -1,4 +1,4 @@
--- LuaEncode - Fast Table Serialization Library for Pure Luau/Lua 5.1+
+-- LuaEncode - Fast table serialization library for pure Luau/Lua 5.1+
 -- MIT License | Copyright (c) 2022-2025 Chad Hyatt <chad@hyatt.page>
 -- https://github.com/chadhyatt/LuaEncode
 
@@ -46,8 +46,6 @@ local KeyIndexTypes = LookupTable({
     "EnumItem", "Enums"
 })
 
--- Simple function for directly checking the type on values, with their input, variable name,
--- and desired type name(s) to check
 local function CheckType(inputData, dataName, ...)
     local ValidTypes = { ... }
     local ValidTypesLookup = LookupTable(ValidTypes)
@@ -62,7 +60,7 @@ local function CheckType(inputData, dataName, ...)
         ), 0)
     end
 
-    return inputData -- Return back input directly
+    return inputData
 end
 
 -- This re-serializes a string back into Lua, for the interpreter AND humans to read. This fixes
@@ -73,7 +71,6 @@ do
     local SpecialCharacters = {
         ["\""] = "\\\"",
         ["\\"] = "\\\\",
-        -- Special ASCII control char codes
         ["\a"] = "\\a",
         ["\b"] = "\\b",
         ["\t"] = "\\t",
@@ -83,7 +80,6 @@ do
         ["\r"] = "\\r",
     }
 
-    -- We need to assign all extra normal byte escapes for runtime optimization
     for Index = 0, 255 do
         local Character = string_char(Index)
 
@@ -128,8 +124,6 @@ do
     -- under `game` or `workspace`, returns nil.
     function EvaluateInstancePath(object)
         local ObjectPointer = object
-
-        -- Input itself doesn't exist?
         if not ObjectPointer then
             return
         end
@@ -161,11 +155,10 @@ do
                 return Path
             end
 
-            -- Advance ObjectPointer, whether it exists or not (JUMPBACK)
+            -- Advance ObjectPointer, whether it exists or not
             ObjectPointer = ObjectParent
         end
 
-        -- Fall back to no ret.. Only objects parented under game/workspace will be serialized
         return
     end
 end
@@ -175,41 +168,39 @@ LuaEncode(inputTable: {[any]: any}, options: {[string]: any}): string
 
     ---------- OPTIONS: ----------
 
-    Prettify <boolean:false> | Whether or not the output should use pretty printing
+    Prettify <boolean:false> | Whether or not the output should be pretty printed
 
-    IndentCount <number:0> | The amount of "spaces" that should be indented per entry (*Note:
-    If `Prettify` is set to true and this is unspecified, it'll be set to `4` automatically*)
+    IndentCount <number:0> | The amount of characters that should be used for indents
+    (**Note**: If `Prettify` is set to true and this is unspecified, it will default to `4`)
 
     InsertCycles <boolean:false> | If there are cyclic references in your table, the output
     will be wrapped in an anonymous function that manually sets paths to those references.
-    **NOTE: If a key in the index path to the cycle is a reference type (e.g. `table`,
-    `function`), the codegen can't externally set that path, and will be ignored.**
+    (**NOTE:** If a key in the index path to the cycle is a reference type (e.g. `table`,
+    `function`), the codegen can't externally set that path, and the value will have to be ignored)
 
-    OutputWarnings <boolean:true> | If "warnings" should be placed to the output (as
-    comments); It's recommended to keep this enabled, however this can be disabled at ease
+    OutputWarnings <boolean:true> | If "warnings" should be placed into the output as
+    comment blocks
 
-    FunctionsReturnRaw <boolean:false> | If functions in said table return back a "raw"
-    value to place in the output as the key/value
+    FunctionsReturnRaw <boolean:false> | If `function` values should be treated as callbacks
+    that return a string to be inserted directly into the serialized output as the key/value
 
-    UseInstancePaths <boolean:true> | If `Instance` reference objects should return their
-    Lua-accessable path for encoding. If the instance is parented under `nil` or isn't under
-    `game`/`workspace`, it'll always fall back to `Instance.new(ClassName)` as before
+    UseInstancePaths <boolean:true> | If Roblox `Instance` values should return their
+    Lua-accessable path for serialization. If the instance is parented under `nil` or
+    isn't under `game`/`workspace`, it'll always fall back to `Instance.new(ClassName)`
 
-    SerializeMathHuge <boolean:true> | If numbers calculated as "infinite" (or negative-inf)
-    numbers should be serialized with "math.huge". (uses the `math` import, as opposed to just
-    a direct data type) If false, "`1/0`" or "`-1/0`" will be serialized, which is supported
-    on all target versions
+    SerializeMathHuge <boolean:true> | If "infinite" (or negative-infinite) numbers should
+    be serialized as `math.huge`. (uses the `math` global, as opposed to just a direct data
+    type) If false, "`1/0`" or "`-1/0`" will be serialized, which is supported on all
+    target Lua environments
 
 ]]
 
 local function LuaEncode(inputTable, options)
     options = options or {}
 
-    -- Check main args
     CheckType(inputTable, "inputTable", "table")
     CheckType(options, "options", "table")
 
-    -- Check options
     CheckType(options.Prettify, "options.Prettify", "boolean", "nil")
     CheckType(options.PrettyPrinting, "options.PrettyPrinting", "boolean", "nil") -- Alias for `Options.Prettify`
     CheckType(options.IndentCount, "options.IndentCount", "number", "nil")
@@ -259,14 +250,11 @@ local function LuaEncode(inputTable, options)
     -- Cases for encoding values, then end setup. Functions are all expected to return a (EncodedKey: string, EncloseInBrackets: boolean)
     local TypeCases = {}
     do
-        -- Basic func for getting the direct value of an encoded type without weird table.pack()[1] syntax
         local function TypeCase(typeName, value)
-            -- Each of these funcs return a tuple, so it'd be annoying to do case-by-case
             local EncodedValue = TypeCases[typeName](value, false) -- False to label as NOT `isKey`
             return EncodedValue
         end
 
-        -- For "tuple" args specifically, so there isn't a bunch of re-used code
         local function Args(...)
             local EncodedValues = {}
 
@@ -280,7 +268,7 @@ local function LuaEncode(inputTable, options)
             return table_concat(EncodedValues, ValueSeperator)
         end
 
-        -- For certain Roblox data types, we use a custom serialization method for filling out params etc
+        -- For Roblox's different `Params` data types
         local function Params(newData, params)
             return "(function(v, p) for pn, pv in next, p do v[pn] = pv end return v end)(" ..
                 table_concat({ newData, TypeCase("table", params) }, ValueSeperator) ..
@@ -291,13 +279,12 @@ local function LuaEncode(inputTable, options)
             -- If the number isn't the current real index of the table, we DO want to
             -- explicitly define it in the serialization no matter what for accuracy
             if isKey and value == KeyNumIndex then
-                -- ^^ What's EXPECTED unless otherwise explicitly defined, if so, return no encoded num
+                -- What's EXPECTED unless otherwise explicitly defined, if so, return no encoded num
                 KeyNumIndex = KeyNumIndex + 1
                 return nil, true
             end
 
-            -- Lua's internal `tostring` handling will denote positive/negativie-infinite number TValues as "inf", which
-            -- makes certain numbers not encode properly. We also just want to make the output precise
+            -- Special cases
             if value == 1 / 0 then
                 return PositiveInf
             elseif value == -1 / 0 then
@@ -310,14 +297,14 @@ local function LuaEncode(inputTable, options)
 
         TypeCases["string"] = function(value, isKey)
             if isKey and not LuaKeywords[value] and string_match(value, "^[A-Za-z_][A-Za-z0-9_]*$") then
-                -- ^^ Then it's a syntaxically-correct variable, doesn't need explicit string def
+                -- Doesn't need full string def
                 return value, true
             end
 
             return SerializeString(value)
         end
 
-        -- This is NOT used for normal table depth, only tables-as-keys and Roblox data types that use tables as
+        -- This is NOT used for recursive table serialization, only table-as-key values and Roblox data types that use tables as
         -- arguments for constructor functions
         TypeCases["table"] = function(value, isKey)
             -- Primarily for tables-as-keys
@@ -345,9 +332,8 @@ local function LuaEncode(inputTable, options)
         end
 
         TypeCases["function"] = function(value)
-            -- If `FunctionsReturnRaw` is set as true, we'll call the function here itself, expecting
-            -- a raw value for FunctionsReturnRaw to add as the key/value, you may want to do this for custom userdata or
-            -- function closures. Thank's for listening to my Ted Talk!
+            -- If `options.FunctionsReturnRaw` is enabled, we'll call the function here itself, expecting
+            -- a raw value to insert as the serialized key/value
             if FunctionsReturnRaw then
                 return value()
             end
@@ -403,7 +389,6 @@ local function LuaEncode(inputTable, options)
         end
 
         TypeCases["Color3"] = function(value)
-            -- Using floats for RGB values, most accurate for direct serialization
             return "Color3.new(" .. Args(value.R, value.G, value.B) .. ")"
         end
 
@@ -415,9 +400,7 @@ local function LuaEncode(inputTable, options)
             return "ColorSequenceKeypoint.new(" .. Args(value.Time, value.Value) .. ")"
         end
 
-        -- We're using fromUnixTimestamp to serialize the object
         TypeCases["DateTime"] = function(value)
-            -- Always an int, we don't need to do anything special
             return "DateTime.fromUnixTimestamp(" .. value.UnixTimestamp .. ")"
         end
 
@@ -606,8 +589,6 @@ local function LuaEncode(inputTable, options)
         TypeCases["UDim2"] = function(value)
             return "UDim2.new(" ..
                 Args(
-                -- Not directly using X and Y UDims for better output (i.e. would be
-                -- UDim2.new(UDim.new(1, 0), UDim.new(1, 0)) if I did)
                     value.X.Scale,
                     value.X.Offset,
                     value.Y.Scale,
@@ -636,7 +617,6 @@ local function LuaEncode(inputTable, options)
             return "buffer.fromstring(" .. SerializeString(buffer.tostring(value)) .. ")"
         end
 
-        -- With userdata, just encode directly
         TypeCases["userdata"] = function(value)
             if getmetatable(value) ~= nil then -- Has mt
                 return "newproxy(true)"
