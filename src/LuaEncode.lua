@@ -507,6 +507,10 @@ local function LuaEncode(inputTable, options)
             })
         end
 
+        TypeCases["Path2DControlPoint"] = function(value)
+            return "Path2DControlPoint.new(" .. Args(value.Position, value.LeftTangent, value.RightTangent) .. ")"
+        end
+
         TypeCases["PathWaypoint"] = function(value)
             return "PathWaypoint.new(" .. Args(value.Position, value.Action, value.Label) .. ")"
         end

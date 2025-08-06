@@ -35,6 +35,7 @@ local Table = {
     }),
     NumberSequenceKeypoint.new(0, 0),
     OverlapParams.new(),
+    Path2DControlPoint.new(UDim2.new(0, 100, 0, 100)),
     PathWaypoint.new(Vector3.new(1, 1, 1), Enum.PathWaypointAction.Walk),
     PhysicalProperties.new(1, 1, 1, 1, 1),
     Random.new(),
