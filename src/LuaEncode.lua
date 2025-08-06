@@ -662,24 +662,23 @@ local function LuaEncode(inputTable, options)
         local SkipStackPop = false
 
         for Key, Value in next, TablePointer, NextKey do
-            local KeyType = Type(Key)
-            local ValueType = Type(Value)
-
+            local KeyType, ValueType = Type(Key), Type(Value)
             local ValueIsTable = ValueType == "table"
+            local KeyTypeCase, ValueTypeCase = TypeCases[KeyType], TypeCases[ValueType]
 
             Output[#Output + 1] = NewEntryString .. IndentString
 
-            if TypeCases[KeyType] and TypeCases[ValueType] then
+            if KeyTypeCase and ValueTypeCase then
                 local ValueWasEncoded = false -- Keeping track of this for adding a "," to the output if needed
 
                 -- Evaluate output for key
-                local KeyEncodedSuccess, EncodedKeyOrError, DontEncloseKeyInBrackets = pcall(TypeCases[KeyType], Key,
+                local KeyEncodedSuccess, EncodedKeyOrError, DontEncloseKeyInBrackets = pcall(KeyTypeCase, Key,
                     true) -- The `true` represents if it's a key or not, here it is
 
                 -- Evaluate output for value, ignoring 2nd arg (`DontEncloseInBrackets`) because this isn't the key
                 local ValueEncodedSuccess, EncodedValueOrError
                 if not ValueIsTable then
-                    ValueEncodedSuccess, EncodedValueOrError = pcall(TypeCases[ValueType], Value, false)
+                    ValueEncodedSuccess, EncodedValueOrError = pcall(ValueTypeCase, Value, false)
                 end
 
                 -- Ignoring `if EncodedKeyOrError` because the key doesn't actually need to ALWAYS
@@ -762,11 +761,14 @@ local function LuaEncode(inputTable, options)
             else
                 -- Data type is unimplemented
 
-                -- As `userdata` is implemented, this is safe from dtc
+                -- Dtc
+                local KeyTostring = (KeyType == "userdata" and "userdata") or tostring(Key)
+                local ValueTostring = (ValueType == "userdata" and "userdata") or tostring(Key)
+
                 Output[#Output + 1] = CommentBlock(BlankSeperator ..
-                    KeyType .. "(" .. SerializeString(tostring(Key)) .. ")" ..
+                    KeyType .. "(" .. SerializeString(KeyTostring) .. ")" ..
                     ":" .. BlankSeperator ..
-                    ValueType .. "(" .. SerializeString(tostring(Value)) .. ")" ..
+                    ValueType .. "(" .. SerializeString(ValueTostring) .. ")" ..
                     BlankSeperator)
 
                 if next(TablePointer, Key) == nil then
