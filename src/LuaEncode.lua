@@ -368,7 +368,7 @@ local function LuaEncode(inputTable, options)
             -- BrickColor.Number (Its enum ID) will be slightly more efficient in all cases in deser,
             -- so we'll use it if Options.Prettify is false
             return "BrickColor.new(" ..
-                (Prettify and TypeCase("string", value.Name)) or value.Number ..
+                ((Prettify and TypeCase("string", value.Name)) or value.Number) ..
                 ")"
         end
 
