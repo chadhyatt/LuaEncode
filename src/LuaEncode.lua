@@ -667,11 +667,9 @@ local function LuaEncode(inputTable, options)
 
             local ValueIsTable = ValueType == "table"
 
-            if TypeCases[KeyType] and TypeCases[ValueType] then
-                if Prettify then
-                    Output[#Output + 1] = NewEntryString .. IndentString
-                end
+            Output[#Output + 1] = NewEntryString .. IndentString
 
+            if TypeCases[KeyType] and TypeCases[ValueType] then
                 local ValueWasEncoded = false -- Keeping track of this for adding a "," to the output if needed
 
                 -- Evaluate output for key
@@ -760,6 +758,19 @@ local function LuaEncode(inputTable, options)
                     Output[#Output + 1] = NewEntryString .. EndingIndentString
                 elseif ValueWasEncoded then
                     Output[#Output + 1] = ","
+                end
+            else
+                -- Data type is unimplemented
+
+                -- As `userdata` is implemented, this is safe from dtc
+                Output[#Output + 1] = CommentBlock(BlankSeperator ..
+                    KeyType .. "(" .. SerializeString(tostring(Key)) .. ")" ..
+                    ":" .. BlankSeperator ..
+                    ValueType .. "(" .. SerializeString(tostring(Value)) .. ")" ..
+                    BlankSeperator)
+
+                if next(TablePointer, Key) == nil then
+                    Output[#Output + 1] = NewEntryString .. EndingIndentString
                 end
             end
         end

@@ -59,6 +59,9 @@ local Table = {
     Vector2int16.new(1, 1),
     Vector3.new(1, 1),
     Vector3int16.new(1, 1),
+
+    workspace.ChildAdded,
+    workspace.ChildAdded:Connect(function() end),
 }
 
 print(LuaEncode(Table, {
@@ -131,6 +134,8 @@ Output:
     Vector2.new(1, 1),
     Vector2int16.new(1, 1),
     Vector3.new(1, 1, 0),
-    Vector3int16.new(1, 1, 0)
+    Vector3int16.new(1, 1, 0),
+    --[[ number("38"): RBXScriptSignal("Signal ChildAdded") ]]
+    --[[ number("39"): RBXScriptConnection("Connection") ]]
 }
 ]=]
