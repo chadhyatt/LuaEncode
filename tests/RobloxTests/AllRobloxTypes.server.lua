@@ -42,8 +42,8 @@ local Table = {
     Ray.new(Vector3.new(1, 1, 1), Vector3.new(2, 2, 2)),
     RaycastParams.new(),
     Rect.new(Vector2.new(1, 1), Vector2.new(2, 2)),
-    Region3.new(Vector3.new(1, 1, 1), Vector3.new(2, 2, 2)),
-    Region3int16.new(Vector3int16.new(1, 1, 1), Vector3int16.new(1, 1, 1)),
+    Region3.new(Vector3.new(1, 1, 1), Vector3.new(3, 3, 3)),
+    Region3int16.new(Vector3int16.new(1, 1, 1), Vector3int16.new(3, 3, 3)),
     TweenInfo.new(
         1,
         Enum.EasingStyle.Linear,

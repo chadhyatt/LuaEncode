@@ -270,7 +270,7 @@ local function LuaEncode(inputTable, options)
 
         -- For Roblox's different `Params` data types
         local function Params(newData, params)
-            return "(function(v, p) for pn, pv in next, p do v[pn] = pv end return v end)(" ..
+            return "(function(p, t) for n, v in next, t do p[n] = v end return p end)(" ..
                 table_concat({ newData, TypeCase("table", params) }, ValueSeperator) ..
                 ")"
         end
@@ -339,7 +339,7 @@ local function LuaEncode(inputTable, options)
             end
 
             return string_format(
-                "function()%sreturn end",
+                "function()%send",
                 (OutputWarnings and " --[[LuaEncode: `options.FunctionsReturnRaw` false; can't serialize functions]] ") or
                 ""
             )
@@ -553,13 +553,13 @@ local function LuaEncode(inputTable, options)
         -- we CAN calculate the min/max of a Region3 from just .CFrame and .Size.. Thanks to wally for linking me
         -- the thread for this method lol
         TypeCases["Region3"] = function(value)
-            local ValueCFrame = value.CFrame
-            local ValueSize = value.Size
+            local ValuePos = value.CFrame.Position
+            local ValueSize = 0.5 * value.Size
 
             return "Region3.new(" ..
                 Args(
-                    ValueCFrame * CFrame.new(-ValueSize / 2), -- Minimum
-                    ValueCFrame * CFrame.new(ValueSize / 2)   -- Maximum
+                    ValuePos - ValueSize, -- Minimum
+                    ValuePos + ValueSize  -- Maximum
                 ) ..
                 ")"
         end
@@ -745,7 +745,7 @@ local function LuaEncode(inputTable, options)
                     -- ^^ Then either the key or value wasn't properly checked or encoded, and there
                     -- was an error we need to log!
                     local ErrorMessage = string_format(
-                        "LuaEncode: Failed to encode %s of data type %s: %s",
+                        "LuaEncode: Failed to serialize %s of data type %s: %s",
                         (not KeyEncodedSuccess and "key") or (not ValueEncodedSuccess and "value") or "key/value",
                         ValueType,
                         (not KeyEncodedSuccess and SerializeString(EncodedKeyOrError)) or
