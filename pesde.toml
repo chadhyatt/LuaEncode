@@ -1,5 +1,5 @@
 name = "chadhyatt/luaencode"
-version = "0.1.0"
+version = "1.4.4"
 description = "Fast table serialization library for pure Luau/Lua 5.1+"
 authors = ["Chad Hyatt <chad@hyatt.page>"]
 repository = "https://github.com/chadhyatt/LuaEncode"
