@@ -8,8 +8,8 @@ license = "MIT"
 includes = ["README.md", "pesde.toml", "src/**"]
 
 [target]
-environment = "lune"
-lib = "src/LuaEncode.luau"
+environment = "luau"
+lib = "src/LuaEncode.lua"
 build_files = ["src"]
 
 [indices]
