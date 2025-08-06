@@ -8,6 +8,10 @@
 
 # LuaEncode doesn't use any 3rd party modules
 /wally.lock
+/pesde.lock
+/luau_packages
+/lune_packages
 
 # Misc
+/.pesde
 /.vscode
