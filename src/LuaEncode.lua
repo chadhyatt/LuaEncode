@@ -222,7 +222,7 @@ local function LuaEncode(inputTable, options)
     local UseInstancePaths = (options.UseInstancePaths == nil and true) or options.UseInstancePaths
     local SerializeMathHuge = (options.SerializeMathHuge == nil and true) or options.SerializeMathHuge
 
-    local StackLevel = options._StackLevel or 1
+    local StackLevelOpt = options._StackLevel or 1
     local VisitedTables = options._VisitedTables or {} -- [Ref: table] = true
 
     -- Lazy serialization reference values
@@ -233,6 +233,8 @@ local function LuaEncode(inputTable, options)
     local ValueSeperator = (Prettify and ", ") or ","
     local BlankSeperator = (Prettify and " ") or ""
     local EqualsSeperator = (Prettify and " = ") or "="
+
+    local StackLevel = StackLevelOpt
 
     -- For pretty printing we need to keep track of the current stack level, then repeat IndentString by that count
     local IndentStringBase = string_rep(" ", IndentCount)
@@ -549,9 +551,7 @@ local function LuaEncode(inputTable, options)
             return "Rect.new(" .. Args(value.Min, value.Max) .. ")"
         end
 
-        -- Roblox doesn't provide read properties for min/max on `Region3`, but they do on Region3int16.. Anyway,
-        -- we CAN calculate the min/max of a Region3 from just .CFrame and .Size.. Thanks to wally for linking me
-        -- the thread for this method lol
+        -- Roblox doesn't provide direct read properties for min/max on `Region3`, but they do on Region3int16..
         TypeCases["Region3"] = function(value)
             local ValuePos = value.CFrame.Position
             local ValueSize = 0.5 * value.Size
@@ -581,7 +581,6 @@ local function LuaEncode(inputTable, options)
                 ")"
         end
 
-        -- CURRENTLY UNDOCUMENTED*
         TypeCases["RotationCurveKey"] = function(value)
             return "RotationCurveKey.new(" .. Args(value.Time, value.Value, value.Interpolation) .. ")"
         end
@@ -644,7 +643,7 @@ local function LuaEncode(inputTable, options)
 
     while TablePointer do
         -- Update StackLevel for formatting
-        StackLevel = #TableStack + 1
+        StackLevel = StackLevelOpt + #TableStack
         IndentString = (Prettify and string_rep(IndentStringBase, StackLevel)) or IndentStringBase
         EndingIndentString = (#IndentString > 0 and string_sub(IndentString, 1, -IndentCount - 1)) or ""
 
