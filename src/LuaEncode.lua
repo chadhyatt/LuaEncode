@@ -97,13 +97,14 @@ end
 
 -- Escape warning messages and such for comment block inserts
 local function CommentBlock(inputString)
-    local Padding = ""
+    local Longest = -1
     for Match in string_gmatch(inputString, "%](=*)%]") do
-        if #Match >= #Padding then
-            Padding = Match .. "="
+        if #Match > Longest then
+            Longest = #Match
         end
     end
 
+    local Padding = string_rep("=", Longest + 1)
     return "--[" .. Padding .. "[" .. inputString .. "]" .. Padding .. "]"
 end
 
@@ -122,7 +123,7 @@ do
 
     -- Evaluates an instances' accessable "path" with just it's ref, and if the root parent is nil/isn't
     -- under `game` or `workspace`, returns nil.
-    function EvaluateInstancePath(object)
+    function EvaluateInstancePath(object, useFindFirstChild)
         local ObjectPointer = object
         if not ObjectPointer then
             return
@@ -139,6 +140,8 @@ do
                 -- ^^ Then we'll use GetService directly, since it's actually a service under the DataModel
 
                 Path = ":GetService(" .. SerializeString(ObjectClassName) .. ")" .. Path
+            elseif useFindFirstChild then
+                Path = ":FindFirstChild(" .. SerializeString(ObjectName) .. ")" .. Path
             elseif not LuaKeywords[ObjectName] and string_match(ObjectName, "^[A-Za-z_][A-Za-z0-9_]*$") then
                 -- ^^ Like the string data type, this means means we can index the name directly in Lua
                 -- without an explicit string
@@ -188,6 +191,9 @@ LuaEncode(inputTable: {[any]: any}, options: {[string]: any}): string
     Lua-accessable path for serialization. If the instance is parented under `nil` or
     isn't under `game`/`workspace`, it'll always fall back to `Instance.new(ClassName)`
 
+    UseFindFirstChild  <boolean:true> | When `options.UseInstancePaths` is true, whether or
+    not instance paths should use `FindFirstChild` instead of direct indexes
+
     SerializeMathHuge <boolean:true> | If "infinite" (or negative-infinite) numbers should
     be serialized as `math.huge`. (uses the `math` global, as opposed to just a direct data
     type) If false, "`1/0`" or "`-1/0`" will be serialized, which is supported on all
@@ -208,6 +214,7 @@ local function LuaEncode(inputTable, options)
     CheckType(options.OutputWarnings, "options.OutputWarnings", "boolean", "nil")
     CheckType(options.FunctionsReturnRaw, "options.FunctionsReturnRaw", "boolean", "nil")
     CheckType(options.UseInstancePaths, "options.UseInstancePaths", "boolean", "nil")
+    CheckType(options.UseFindFirstChild, "options.UseFindFirstChild", "boolean", "nil")
     CheckType(options.SerializeMathHuge, "options.SerializeMathHuge", "boolean", "nil")
 
     CheckType(options._StackLevel, "options._StackLevel", "number", "nil")
@@ -220,6 +227,7 @@ local function LuaEncode(inputTable, options)
     local OutputWarnings = (options.OutputWarnings == nil and true) or options.OutputWarnings
     local FunctionsReturnRaw = (options.FunctionsReturnRaw == nil and false) or options.FunctionsReturnRaw
     local UseInstancePaths = (options.UseInstancePaths == nil and true) or options.UseInstancePaths
+    local UseFindFirstChild = (options.UseFindFirstChild == nil and true) or options.UseFindFirstChild
     local SerializeMathHuge = (options.SerializeMathHuge == nil and true) or options.SerializeMathHuge
 
     local StackLevelOpt = options._StackLevel or 1
@@ -476,15 +484,18 @@ local function LuaEncode(inputTable, options)
         -- nil or some DataModel not under `game`, it'll just return nil
         TypeCases["Instance"] = function(value)
             if UseInstancePaths then
-                local InstancePath = EvaluateInstancePath(value)
+                local InstancePath = EvaluateInstancePath(value, UseFindFirstChild)
                 if InstancePath then
                     return InstancePath
                 end
-
-                -- ^^ Now, if the path isn't accessable, falls back to the return below anyway
             end
 
-            return "nil" .. BlankSeperator .. CommentBlock("Instance.new(" .. TypeCase("string", value.ClassName) .. ")")
+            return "nil" .. BlankSeperator ..
+                CommentBlock("Instance.new(" .. TypeCase("string", value.ClassName) .. ")" .. BlankSeperator .. "{" ..
+                    "Name:" ..
+                    BlankSeperator ..
+                    SerializeString(value.Name) ..
+                    "}")
         end
 
         TypeCases["NumberRange"] = function(value)

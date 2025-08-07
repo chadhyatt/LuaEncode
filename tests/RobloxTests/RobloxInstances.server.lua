@@ -45,15 +45,27 @@ print(LuaEncode(Table, {
     Prettify = true,
     UseInstancePaths = true
 }))
+print(LuaEncode(Table, {
+    Prettify = true,
+    UseInstancePaths = true,
+    UseFindFirstChild = false,
+}))
 
---[[
+--[=[
 Output:
 
+{
+    SomePart = workspace:FindFirstChild("hellopart!"),
+    Baseplate = workspace:FindFirstChild("Baseplate"),
+    SomePartWithWeirdName = workspace:FindFirstChild("LuaEncode is cool!"),
+    Skybox = game:GetService("Lighting"):FindFirstChild("CoolSky"),
+    InstanceWithNoParent = nil --[[Instance.new("Part") {Name: "Part"}]]
+}
 {
     SomePart = workspace["hellopart!"],
     Baseplate = workspace.Baseplate,
     SomePartWithWeirdName = workspace["LuaEncode is cool!"],
     Skybox = game:GetService("Lighting").CoolSky,
-    InstanceWithNoParent = Instance.new("Part")
+    InstanceWithNoParent = nil --[[Instance.new("Part") {Name: "Part"}]]
 }
-]]
+]=]

@@ -121,6 +121,7 @@ LuaEncode(inputTable: {[any]: any}, options: {[string]: any}): string
 | OutputWarnings     | `<boolean:true>`   | If "warnings" should be placed into the output as comment blocks |
 | FunctionsReturnRaw | `<boolean:false>`  | If `function` values should be treated as callbacks that return a string to be inserted directly into the serialized output as the key/value |
 | UseInstancePaths   | `<boolean:true>`  | If Roblox `Instance` values should return their Lua-accessable path for serialization. If the instance is parented under `nil` or isn't under `game`/`workspace`, it'll always fall back to `Instance.new(ClassName)` |
+| UseFindFirstChild  | `<boolean:true>`  | When `options.UseInstancePaths` is true, whether or not instance paths should use `FindFirstChild` instead of direct indexes |
 | SerializeMathHuge  | `<boolean:true> ` | If "infinite" (or negative-infinite) numbers should be serialized as `math.huge`. (uses the `math` global, as opposed to just a direct data type) If false, "`1/0`" or "`-1/0`" will be serialized, which is supported on all target Lua environments |
 
 ___
