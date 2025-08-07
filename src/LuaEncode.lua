@@ -46,6 +46,8 @@ local KeyIndexTypes = LookupTable({
     "EnumItem", "Enums"
 })
 
+local DirectIndexPat = "^[A-Za-z_][A-Za-z0-9_]*$"
+
 local function CheckType(inputData, dataName, ...)
     local ValidTypes = { ... }
     local ValidTypesLookup = LookupTable(ValidTypes)
@@ -142,7 +144,7 @@ do
                 Path = ":GetService(" .. SerializeString(ObjectClassName) .. ")" .. Path
             elseif useFindFirstChild then
                 Path = ":FindFirstChild(" .. SerializeString(ObjectName) .. ")" .. Path
-            elseif not LuaKeywords[ObjectName] and string_match(ObjectName, "^[A-Za-z_][A-Za-z0-9_]*$") then
+            elseif not LuaKeywords[ObjectName] and string_match(ObjectName, DirectIndexPat) then
                 -- ^^ Like the string data type, this means means we can index the name directly in Lua
                 -- without an explicit string
                 Path = "." .. ObjectName .. Path
@@ -306,7 +308,7 @@ local function LuaEncode(inputTable, options)
         end
 
         TypeCases["string"] = function(value, isKey)
-            if isKey and not LuaKeywords[value] and string_match(value, "^[A-Za-z_][A-Za-z0-9_]*$") then
+            if isKey and not LuaKeywords[value] and string_match(value, DirectIndexPat) then
                 -- Doesn't need full string def
                 return value, true
             end
@@ -439,12 +441,23 @@ local function LuaEncode(inputTable, options)
 
         -- e.g. `Enum.UserInputType`
         TypeCases["Enum"] = function(value)
-            return "Enum." .. tostring(value)
+            local ValueString = tostring(value)
+
+            if string_match(ValueString, DirectIndexPat) then
+                return "Enum." .. ValueString
+            end
+            return "Enum[" .. SerializeString(ValueString) .. "]"
         end
 
         -- e.g. `Enum.UserInputType.Gyro`
         TypeCases["EnumItem"] = function(value)
-            return tostring(value) -- Returns the full enum index for now (e.g. "Enum.UserInputType.Gyro")
+            local EnumTypeStr = TypeCase("Enum", value.EnumType)
+            local EnumName = value.Name
+
+            if string_match(EnumName, DirectIndexPat) then
+                return EnumTypeStr .. "." .. value.Name
+            end
+            return EnumTypeStr .. "[" .. SerializeString(EnumName) .. "]"
         end
 
         -- i.e. the `Enum` global return
@@ -710,7 +723,7 @@ local function LuaEncode(inputTable, options)
                     if ValueIsTable then
                         local IndexPath
                         if InsertCycles and KeyIndexTypes[KeyType] and RefMaps[TablePointer] then
-                            if KeyType == "string" and not LuaKeywords[Key] and string_match(Key, "^[A-Za-z_][A-Za-z0-9_]*$") then
+                            if KeyType == "string" and not LuaKeywords[Key] and string_match(Key, DirectIndexPat) then
                                 IndexPath = "." .. Key
                             else
                                 local EncodedKeyAsValue = TypeCases[KeyType](Key)
