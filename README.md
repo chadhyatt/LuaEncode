@@ -133,7 +133,7 @@ ___
 
 | DataType                                                                                                      | Serialized As                                     | Implemented |
 |:--------------------------------------------------------------------------------------------------------------|:--------------------------------------------------|:-----------:|
-| [buffer](https://create.roblox.com/docs/reference/engine/libraries/buffer)                                    | `buffer.fromString()`                             | ✔ |
+| [buffer](https://create.roblox.com/docs/reference/engine/libraries/buffer)                                    | `buffer.fromstring()`                             | ✔ |
 | [Axes](https://create.roblox.com/docs/reference/engine/datatypes/Axes)                                        | `Axes.new()`                                      | ✔ |
 | [BrickColor](https://create.roblox.com/docs/reference/engine/datatypes/BrickColor)                            | `BrickColor.new()`                                | ✔ |
 | [CFrame](https://create.roblox.com/docs/reference/engine/datatypes/CFrame)                                    | `CFrame.new()`                                    | ✔ |
