@@ -762,8 +762,10 @@ local function LuaEncode(inputTable, options)
                 -- Data type is unimplemented
 
                 -- Dtc
-                local KeyTostring = (KeyType == "userdata" and "userdata") or tostring(Key)
-                local ValueTostring = (ValueType == "userdata" and "userdata") or tostring(Key)
+                local KeyTostring = (KeyType == "userdata" and "userdata") or
+                    tostring(Key)
+                local ValueTostring = (ValueType == "userdata" and "userdata") or
+                    tostring(Value)
 
                 Output[#Output + 1] = CommentBlock(BlankSeperator ..
                     KeyType .. "(" .. SerializeString(KeyTostring) .. ")" ..
