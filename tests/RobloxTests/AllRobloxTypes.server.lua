@@ -60,6 +60,29 @@ local Table = {
     Vector3.new(1, 1),
     Vector3int16.new(1, 1),
 
+    SharedTable.new({
+        {
+            {
+                hi = {
+                    "hello",
+                    1
+                },
+                bye = {
+                    "goodbye",
+                    2
+                }
+            },
+            {
+                3,
+                4,
+                5,
+                {
+                    6
+                }
+            }
+        }
+    }),
+
     workspace.ChildAdded,
     workspace.ChildAdded:Connect(function() end),
 }
@@ -98,7 +121,7 @@ Output:
     Faces.new(Enum.NormalId.Front),
     FloatCurveKey.new(1, 1, Enum.KeyInterpolationMode.Constant),
     Font.new("rbxasset://fonts/families/Arial.json", Enum.FontWeight.Regular, Enum.FontStyle.Normal),
-    nil --[[Instance.new("Part")]],
+    nil --[[Instance.new("Part") {Name: "Part"}]],
     NumberRange.new(1, 10),
     NumberSequence.new({
         NumberSequenceKeypoint.new(0, 0, 0),
@@ -135,7 +158,29 @@ Output:
     Vector2int16.new(1, 1),
     Vector3.new(1, 1, 0),
     Vector3int16.new(1, 1, 0),
-    --[[ number("38"): RBXScriptSignal("Signal ChildAdded") ]]
-    --[[ number("39"): RBXScriptConnection("Connection") ]]
+    SharedTable.new({
+        {
+            {
+                hi = {
+                    "hello",
+                    1
+                },
+                bye = {
+                    "goodbye",
+                    2
+                }
+            },
+            {
+                3,
+                4,
+                5,
+                {
+                    6
+                }
+            }
+        }
+    }),
+    --[[ number("39"): RBXScriptSignal("Signal ChildAdded") ]]
+    --[[ number("40"): RBXScriptConnection("Connection") ]]
 }
 ]=]

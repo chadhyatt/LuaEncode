@@ -221,6 +221,7 @@ local function LuaEncode(inputTable, options)
 
     CheckType(options._StackLevel, "options._StackLevel", "number", "nil")
     CheckType(options._VisitedTables, "options._VisitedTables", "table", "nil")
+    CheckType(options._SharedTableLarpAsRegTable, "options._SharedTableLarpAsRegTable", "boolean", "nil")
 
     local Prettify = (options.Prettify == nil and options.PrettyPrinting == nil and false) or
         (options.Prettify ~= nil and options.Prettify) or (options.PrettyPrinting and options.PrettyPrinting)
@@ -234,6 +235,7 @@ local function LuaEncode(inputTable, options)
 
     local StackLevelOpt = options._StackLevel or 1
     local VisitedTables = options._VisitedTables or {} -- [Ref: table] = true
+    local SharedTableLarpAsRegTable = options._SharedTableLarpAsRegTable or false
 
     -- Lazy serialization reference values
     local PositiveInf = (SerializeMathHuge and "math.huge") or "1/0"
@@ -262,8 +264,8 @@ local function LuaEncode(inputTable, options)
     -- Cases for encoding values, then end setup. Functions are all expected to return a (EncodedKey: string, EncloseInBrackets: boolean)
     local TypeCases = {}
     do
-        local function TypeCase(typeName, value)
-            local EncodedValue = TypeCases[typeName](value, false) -- False to label as NOT `isKey`
+        local function TypeCase(typeName, value, ...)
+            local EncodedValue = TypeCases[typeName](value, false, ...) -- False to label as NOT `isKey`
             return EncodedValue
         end
 
@@ -318,7 +320,7 @@ local function LuaEncode(inputTable, options)
 
         -- This is NOT used for recursive table serialization, only table-as-key values and Roblox data types that use tables as
         -- arguments for constructor functions
-        TypeCases["table"] = function(value, isKey)
+        TypeCases["table"] = function(value, isKey, stLarpAsRegTable)
             -- Primarily for tables-as-keys
             if VisitedTables[value] and OutputWarnings then
                 return "{--[[LuaEncode: Duplicate reference]]}"
@@ -330,6 +332,7 @@ local function LuaEncode(inputTable, options)
                 NewOptions.IndentCount = (isKey and ((not Prettify and IndentCount) or 1)) or IndentCount
                 NewOptions._StackLevel = (isKey and 1) or StackLevel + 1
                 NewOptions._VisitedTables = VisitedTables
+                NewOptions._SharedTableLarpAsRegTable = (not isKey and stLarpAsRegTable)
             end
 
             return LuaEncode(value, NewOptions)
@@ -642,6 +645,21 @@ local function LuaEncode(inputTable, options)
 
         TypeCases["buffer"] = function(value)
             return "buffer.fromstring(" .. SerializeString(buffer.tostring(value)) .. ")"
+        end
+
+        TypeCases["SharedTable"] = function(value, isKey)
+            local StClone = {}
+            -- Will still compile in vanilla Lua if we do it this way. We should probably create a deep clone
+            -- of the current state of the table regardless
+            for Key, Value in SharedTable.clone(value, not SharedTableLarpAsRegTable) do
+                StClone[Key] = Value
+            end
+
+            local StCloneStr = TypeCases["table"](StClone, isKey, true) -- 3rd arg is stLarpAsRegTable
+            if SharedTableLarpAsRegTable then
+                return StCloneStr
+            end
+            return table_concat({ "SharedTable.new(", StCloneStr, ")" })
         end
 
         TypeCases["userdata"] = function(value)
