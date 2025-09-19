@@ -823,6 +823,9 @@ local function LuaEncode(inputTable, options)
 
         -- Vanilla Lua control flow is fun
         if not SkipStackPop then
+            if not Prettify and IndentCount > 0 then
+                Output[#Output + 1] = IndentString
+            end
             Output[#Output + 1] = "}"
 
             if #TableStack > 0 then
