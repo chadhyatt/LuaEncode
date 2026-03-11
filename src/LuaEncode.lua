@@ -83,6 +83,7 @@ do
     }
 
     for Index = 0, 255 do
+        string_char = string_char
         local Character = string_char(Index)
 
         if not SpecialCharacters[Character] and (Index < 32 or Index > 126) then
