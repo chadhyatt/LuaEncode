@@ -1,0 +1,24 @@
+name = "chadhyatt/luaencode"
+version = "1.4.4"
+description = "Fast table serialization library for pure Luau/Lua 5.1+"
+authors = ["Chad Hyatt <chad@hyatt.page>"]
+repository = "https://github.com/chadhyatt/LuaEncode"
+license = "MIT"
+
+includes = ["README.md", "pesde.toml", "src/**"]
+
+[target]
+environment = "luau"
+lib = "src/LuaEncode.lua"
+build_files = ["src"]
+
+[indices]
+default = "https://github.com/pesde-pkg/index"
+
+[scripts]
+roblox_sync_config_generator = ".pesde/scripts/roblox_sync_config_generator.luau"
+sourcemap_generator = ".pesde/scripts/sourcemap_generator.luau"
+
+[dev_dependencies]
+scripts = { name = "pesde/scripts_rojo", version = "^0.1.1", target = "lune" }
+rojo = { name = "pesde/rojo", version = "^7.4.4", target = "lune" }
